@@ -9,6 +9,8 @@ CUDAnative = "be33ccc6-a3ff-5ff2-a52e-74243cff1e17"
 Knet = "1902f260-5fb4-5aff-8c31-6271790ab950"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 
+Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+
 [compat]
 julia = "1"
 CUDAnative = "2.7, 2.8, 2.9, 3.0, 3.1"
