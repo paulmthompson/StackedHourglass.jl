@@ -1,6 +1,6 @@
 name = "StackedHourglass"
 uuid = "9f277440-d667-11ea-33e8-3d6042182d56"
-version = "0.1"
+version = "0.1.1"
 author = ["Paul Thompson"]
 
 [deps]
