@@ -9,7 +9,7 @@ using Images, Distributed, MAT
 export HG2
 
 #exported methods
-export subpixel, set_testing, save_hourglass, load_hourglass
+export subpixel, set_testing, save_hourglass, load_hourglass, features
 
 abstract type NN end;
 const HGType = Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}}
