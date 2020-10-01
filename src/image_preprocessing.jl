@@ -1,6 +1,48 @@
 
+#=
+Image augmentation will apply various transformations to the training images
+and accompanying labels
+=#
 
-function image_augmentation(im,ll)
+mutable struct ImageAugmentation
+    rotation::Bool
+    rotation_angles::Array{Float64,1}
+    flip_x::Bool
+    flip_y::Bool
+end
+
+function ImageAugmentation()
+
+    default_rotations = [pi/6, pi/2, pi, 3*pi/2, -pi/6]
+    ImageAugmentation(true,default_rotations,true,true)
+end
+
+function rotation_augmentation(im,ll,im_out,l_out,ind,aug::ImageAugmentation,count)
+    for j in aug.rotation_angles
+        for k=1:size(im,3)
+            im_out[:,:,k,count] = imrotate(im[:,:,k,ind],j,Reflect())[1:size(im,1),1:size(im,2)]
+        end
+        for k=1:size(ll,3)
+            l_out[:,:,k,count] = imrotate(ll[:,:,k,ind],j,Reflect())[1:size(ll,1),1:size(ll,2)]
+        end
+        count += 1
+    end
+    count
+end
+
+function flip_x_augmentation(img,ll,img_out,l_out,ind,aug::ImageAugmentation,count)
+    im_out[:,:,:,count] = reverse(im[:,:,:,ind],dims=1)
+    l_out[:,:,:,count] = reverse(ll[:,:,:,ind],dims=1)
+    count+=1
+end
+
+function flip_y_augmentation(img,ll,img_out,l_out,ind,aug::ImageAugmentation,count)
+    im_out[:,:,:,count] = reverse(im[:,:,:,ind],dims=2)
+    l_out[:,:,:,count] = reverse(ll[:,:,:,ind],dims=2)
+    count+=1
+end
+
+function image_augmentation(im,ll,aug::ImageAugmentation)
 
     im_out = zeros(Float32,size(im,1),size(im,2),size(im,3),size(im,4)*8)
     l_out = zeros(Float32,size(ll,1),size(ll,2),size(ll,3),size(ll,4)*8)
@@ -12,25 +54,19 @@ function image_augmentation(im,ll)
         l_out[:,:,:,count] = ll[:,:,:,i]
         count += 1
         #rotations
-        for j in [pi/6, pi/2, pi, 3*pi/2, -pi/6]
-            for k=1:size(im,3)
-                im_out[:,:,k,count] = imrotate(im[:,:,k,i],j,Reflect())[1:size(im,1),1:size(im,2)]
-            end
-            for k=1:size(ll,3)
-                l_out[:,:,k,count] = imrotate(ll[:,:,k,i],j,Reflect())[1:size(ll,1),1:size(ll,2)]
-            end
-            count += 1
+        if aug.rotation
+            count = rotation_augmentation(im,ll,im_out,l_out,i,aug,count)
         end
 
         #Flip x
-        im_out[:,:,:,count] = reverse(im[:,:,:,i],dims=1)
-        l_out[:,:,:,count] = reverse(ll[:,:,:,i],dims=1)
-        count+=1
+        if aug.flip_x
+            count = flip_x_augmentation(img,ll,img_out,l_out,i,aug,count)
+        end
 
         #Flip Y
-        im_out[:,:,:,count] = reverse(im[:,:,:,i],dims=2)
-        l_out[:,:,:,count] = reverse(ll[:,:,:,i],dims=2)
-        count+=1
+        if aug.flip_y
+            count = flip_y_augmentation(img,ll,img_out,l_out,i,aug,count)
+        end
 
         # 0.75 Scale (zoom in)
 
