@@ -1,4 +1,7 @@
 
+#=
+Loads a single image from a filename and converts to the expected 256x256 size
+=#
 function load_single_image(filename::String,imgs,ii,x_off,y_off)
 
     this_img=load(filename)
@@ -38,6 +41,10 @@ function add_single_label(ll,ii,x_off,y_off,j_a,ds=4)
 
     end
 end
+
+#=
+Saving Hourglass Model
+=#
 function save_hourglass(name,x)
     count=[1];
     file=matopen(name,"w")
@@ -75,12 +82,16 @@ function save_nn(x,file,count)
     end
 end
 
+#=
+Loading Hourglass Model
+=#
 function load_hourglass(name,x)
     count=[1];
     file=matopen(name,"r")
         load_nn(x,file,count)
     close(file)
 end
+
 function load_nn(x,file,count)
 
     for f in fieldnames(typeof(x))
@@ -129,6 +140,9 @@ function load_nn(x,file,count)
     end
 end
 
+#=
+Change the number of input or output features or dimensions for hourglass model
+=#
 function change_hourglass(hg,feature_num,input_dim,output_dim)
 
     change_hourglass_input(hg,feature_num,input_dim)

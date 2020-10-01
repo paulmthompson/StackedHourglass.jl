@@ -1,5 +1,5 @@
 
-function pixel_mse(truth::KnetArray{Float32,4},pred::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function pixel_mse(truth::KnetArray{Float32,4},pred::HGType)
     loss = sum((pred .- truth).^2)
     loss / (size(pred,3) * size(pred,4))
 end

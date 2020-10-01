@@ -9,7 +9,7 @@ mutable struct Out_Layer <: NN
     training::Bool
 end
 
-function (c::Out_Layer)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (c::Out_Layer)(x::HGType)
     r1=c.r1(x)
     out1 = conv4(c.w,r1); myfree(r1);
     out2 = out1 .+ c.b; myfree(out1);
@@ -45,7 +45,7 @@ struct FirstBlock <: NN
 end
 FirstBlock(N)=FirstBlock(Conv1(3,64,7,2,3),Residual_skip(64,128),Pool(),Residual(128,128),Residual_skip(128,N))
 
-function (f::FirstBlock)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (f::FirstBlock)(x::HGType)
     c1=f.c1(x)
     r1=f.r1(c1); myfree(c1);
     p1=f.p1(r1); myfree(r1);
@@ -87,7 +87,7 @@ function Hourglass(n,f_num)
     Hourglass(n,up1,pool1,low1,low2,low3,up2)
 end
 
-function (h::Hourglass)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (h::Hourglass)(x::HGType)
 
     up1 = h.up1(x)
     pool1 = h.pool1(x)
@@ -133,11 +133,11 @@ end
 
 features(hg::HG2)=size(hg.merge_preds[1].w,3)
 
-function (h::HG2)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (h::HG2)(x::HGType)
     temp=h.fb(x)
 
-    preds=Array{Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}},1}() #Can this be typed to be the same as input?
-    temps=Array{Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}},1}(undef,h.nstack) #Can this be typed to be the same as input?
+    preds=Array{HGType,1}() #Can this be typed to be the same as input?
+    temps=Array{HGType,1}(undef,h.nstack) #Can this be typed to be the same as input?
     temps[1]=temp
     for i=1:h.nstack
         hg=h.hg[i](temps[i])

@@ -9,7 +9,7 @@ mutable struct Conv1 <: NN
     training::Bool
 end
 
-function (c::Conv1)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (c::Conv1)(x::HGType)
     bn = batchnorm(x,c.ms,c.bn_p,training=c.training)
     relu_out = relu.(bn)
     output1 = conv4(c.w,relu_out,stride=c.stride,padding=c.padding)
@@ -40,7 +40,7 @@ mutable struct Conv0 <: NN
     padding::Int64
 end
 
-function (c::Conv0)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (c::Conv0)(x::HGType)
     out1=conv4(c.w,x,stride=c.stride,padding=c.padding)
     out2 = out1 .+ c.b
 
@@ -61,7 +61,7 @@ struct Residual <: NN
     c3::Conv1
 end
 
-function (r::Residual)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (r::Residual)(x::HGType)
     c1=r.c1(x)
     c2=r.c2(c1)
     output = r.c3(c2) .+ x
@@ -93,7 +93,7 @@ mutable struct Residual_skip <: NN
     c3::Conv1
 end
 
-function (r::Residual_skip)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}})
+function (r::Residual_skip)(x::HGType)
     residual1 = conv4(r.w,x,stride=1)
     residual2 = residual1 .+ r.b
     c1=r.c1(x)
@@ -123,8 +123,8 @@ end
 
 struct Pool
 end
-(p::Pool)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}}) = pool(x)
+(p::Pool)(x::HGType) = pool(x)
 
 struct Unpool
 end
-(u::Unpool)(x::Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}}) = unpool(x)
+(u::Unpool)(x::HGType) = unpool(x)
