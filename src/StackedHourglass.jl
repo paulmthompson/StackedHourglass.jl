@@ -3,7 +3,7 @@ module StackedHourglass
 #Deep Learning Libraries
 using CuArrays, CuArrays.CUFFT, CUDAnative, Knet
 
-using Images, Distributed
+using Images, Distributed, MAT
 
 #exported types
 export HG2
