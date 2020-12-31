@@ -4,7 +4,7 @@ mutable struct Out_Layer <: NN
     r1::Residual
     w::Param{KnetArray{Float32,4}} #weights
     b::Param{KnetArray{Float32,4}} #biases
-    ms::Knet.BNMoments #batch norm moments
+    ms::KnetMoment #batch norm moments
     bn_p::Param{KnetArray{Float32,1}} #batch norm parameters
     training::Bool
 end

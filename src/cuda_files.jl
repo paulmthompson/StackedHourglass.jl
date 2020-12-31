@@ -1,5 +1,12 @@
 
+
+
 #adapted from https://stackoverflow.com/questions/51038294/resize-image-using-nearest-neighborhood-with-cuda
+
+function _CUDA_resize(pIn,pOut)
+    _CUDA_resize(pIn,pOut,size(pIn,1),size(pIn,2),size(pOut,1),size(pOut,2))
+end
+
 function _CUDA_resize(pIn,pOut,w_in,h_in,w_out,h_out)
 
     index_i = blockDim().y * (blockIdx().y-1) + threadIdx().y
@@ -19,9 +26,12 @@ function _CUDA_resize(pIn,pOut,w_in,h_in,w_out,h_out)
 end
 
 function CUDA_resize(pIn,pOut)
-    CuArrays.@sync begin
-        @cuda threads=(16,16) _CUDA_resize(pIn,pOut,size(pIn,1),size(pIn,2),size(pOut,1),size(pOut,2))
+    @static if VERSION > v"1.5-"
+        CUDA.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
+    else
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
     end
+
 end
 
 function _CUDA_resize4(pIn,pOut,w_in,h_in,w_out,h_out,n)
@@ -44,9 +54,19 @@ function _CUDA_resize4(pIn,pOut,w_in,h_in,w_out,h_out,n)
     return
 end
 
+function _CUDA_resize4(pIn,pOut)
+    _CUDA_resize4(pIn,pOut,size(pIn,1),size(pIn,2),size(pOut,1),size(pOut,2),size(pIn,4))
+end
+
 function CUDA_resize4(pIn,pOut)
-    CuArrays.@sync begin
-        @cuda threads=(16,16) _CUDA_resize4(pIn,pOut,size(pIn,1),size(pIn,2),size(pOut,1),size(pOut,2),size(pIn,4))
+    @static if VERSION > v"1.5-"
+        CUDA.@sync begin
+            @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
+        end
+    else
+        CuArrays.@sync begin
+            @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
+        end
     end
 end
 
@@ -68,9 +88,19 @@ function _CUDA_normalize_images(pIn,meanImg,h_out,w_out,n)
     return
 end
 
+function _CUDA_normalize_images(pIn,meanImg)
+    _CUDA_normalize_images(pIn,meanImg,size(pIn,1),size(pIn,2),size(pIn,4))
+end
+
 function CUDA_normalize_images(pIn,meanImg)
-    CuArrays.@sync begin
-        @cuda threads=256 _CUDA_normalize_images(pIn,meanImg,size(pIn,1),size(pIn,2),size(pIn,4))
+    @static if VERSION > v"1.5-"
+        CUDA.@sync begin
+            @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
+        end
+    else
+        CuArrays.@sync begin
+            @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
+        end
     end
 end
 
@@ -81,8 +111,14 @@ function CUDA_preprocess(pIn,pOut)
     h_in=size(pIn,2)
     w_out=size(pOut,1)
     h_out=size(pOut,2)
-    CuArrays.@sync begin
-        @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
+    @static if VERSION > v"1.5-"
+        CUDA.@sync begin
+            @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
+        end
+    else
+        CuArrays.@sync begin
+            @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
+        end
     end
 end
 

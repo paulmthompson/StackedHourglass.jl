@@ -1,8 +1,9 @@
 
+
 mutable struct Conv1 <: NN
     w::Param{KnetArray{Float32,4}} #weights
     b::Param{KnetArray{Float32,4}} #biases
-    ms::Knet.BNMoments #batch norm moments
+    ms::KnetMoment #batch norm moments
     bn_p::Param{KnetArray{Float32,1}} #batch norm parameters
     stride::Int64
     padding::Int64
