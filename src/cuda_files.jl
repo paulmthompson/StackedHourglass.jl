@@ -107,13 +107,10 @@ function CUDA_preprocess(pIn,pOut)
     w_out=size(pOut,1)
     h_out=size(pOut,2)
     @static if VERSION > v"1.5-"
-        CUDA.@sync begin
-            @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
-        end
+        #CUDA.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
     else
-        CuArrays.@sync begin
-            @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
-        end
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
     end
 end
 
