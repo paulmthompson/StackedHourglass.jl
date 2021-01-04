@@ -1,14 +1,14 @@
 module StackedHourglass
 
 #Deep Learning Libraries
-if VERSION > v"1.5-"
+#if VERSION > v"1.5-"
     #using CUDA, Knet
-    using CuArrays, CuArrays.CUFFT, CUDAnative, Knet
-    const KnetMoment = Knet.Ops20.BNMoments
-else
+    #using CuArrays, CuArrays.CUFFT, CUDAnative, Knet
+    #const KnetMoment = Knet.Ops20.BNMoments
+#else
     using CuArrays, CuArrays.CUFFT, CUDAnative, Knet
     const KnetMoment = Knet.BNMoments
-end
+#end
 
 using Images, Distributed, MAT, FFTW
 
