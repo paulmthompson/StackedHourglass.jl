@@ -27,7 +27,8 @@ end
 
 function CUDA_resize(pIn,pOut)
     @static if VERSION > v"1.5-"
-        CUDA.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
+        #CUDA.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
     else
         CuArrays.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
     end
@@ -60,13 +61,10 @@ end
 
 function CUDA_resize4(pIn,pOut)
     @static if VERSION > v"1.5-"
-        CUDA.@sync begin
-            @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
-        end
+        #CUDA.@sync @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
     else
-        CuArrays.@sync begin
-            @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
-        end
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
     end
 end
 
@@ -94,13 +92,10 @@ end
 
 function CUDA_normalize_images(pIn,meanImg)
     @static if VERSION > v"1.5-"
-        CUDA.@sync begin
-            @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
-        end
+        #CUDA.@sync @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
+        CuArrays.@sync @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
     else
-        CuArrays.@sync begin
-            @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
-        end
+        CuArrays.@sync @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
     end
 end
 
@@ -112,13 +107,10 @@ function CUDA_preprocess(pIn,pOut)
     w_out=size(pOut,1)
     h_out=size(pOut,2)
     @static if VERSION > v"1.5-"
-        CUDA.@sync begin
-            @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
-        end
+        #CUDA.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
     else
-        CuArrays.@sync begin
-            @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
-        end
+        CuArrays.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
     end
 end
 
