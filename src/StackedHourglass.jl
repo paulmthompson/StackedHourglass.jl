@@ -9,7 +9,10 @@ else
     const KnetMoment = Knet.BNMoments
 end
 
-using Images, Distributed, MAT, FFTW
+#standard Library
+using Distributed, Random
+
+using Images, MAT, FFTW
 
 #exported types
 export HG2

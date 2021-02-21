@@ -1,11 +1,12 @@
 name = "StackedHourglass"
 uuid = "9f277440-d667-11ea-33e8-3d6042182d56"
-version = "0.1.4"
+version = "0.1.5"
 author = ["Paul Thompson"]
 
 [deps]
 #Standard Library
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
 CUDAnative = "be33ccc6-a3ff-5ff2-a52e-74243cff1e17"

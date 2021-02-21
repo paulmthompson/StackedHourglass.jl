@@ -20,10 +20,10 @@ end
 function rotation_augmentation(im,ll,im_out,l_out,ind,aug::ImageAugmentation,count)
     for j in aug.rotation_angles
         for k=1:size(im,3)
-            im_out[:,:,k,count] = imrotate(im[:,:,k,ind],j,Reflect())[1:size(im,1),1:size(im,2)]
+            im_out[:,:,k,count] = imrotate(im[:,:,k,ind],j,ImageTransformations.Reflect())[1:size(im,1),1:size(im,2)]
         end
         for k=1:size(ll,3)
-            l_out[:,:,k,count] = imrotate(ll[:,:,k,ind],j,Reflect())[1:size(ll,1),1:size(ll,2)]
+            l_out[:,:,k,count] = imrotate(ll[:,:,k,ind],j,ImageTransformations.Reflect())[1:size(ll,1),1:size(ll,2)]
         end
         count += 1
     end
