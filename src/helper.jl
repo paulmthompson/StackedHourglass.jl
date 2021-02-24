@@ -22,6 +22,30 @@ function create_padded_kernel(size_x,size_y,kl)
     kernel_pad
 end
 
+#https://github.com/JuliaImages/ImageTransformations.jl/blob/master/src/resizing.jl#L239
+function lowpass_filter_resize(img,sz)
+
+    σ = map((o,n)->0.75*o/n, size(img), sz)
+    kern = KernelFactors.gaussian(σ)
+    imgr = imresize(imfilter(img, kern, NA()), sz)
+end
+
+function predict_single_frame(hg,img)
+
+    temp_frame = convert(Array{Float32,2},img)
+    temp_frame = convert(Array{Float32,2},lowpass_filter_resize(temp_frame,(256,256)))
+
+    temp_frame = convert(KnetArray,reshape(temp_frame,(256,256,1,1)))
+
+    my_features = features(hg)
+
+    set_testing(hg,false) #Turn off batch normalization for prediction
+    myout=hg(temp_frame)[4]
+    set_testing(hg,true) #Turn back on
+
+    myout=convert(Array{Float32,4},myout)
+end
+
 #=
 Convert Discrete points to heatmap for deep learning
 =#
