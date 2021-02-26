@@ -44,8 +44,22 @@ end
 
 function image_augmentation(im,ll,aug::ImageAugmentation)
 
-    im_out = zeros(Float32,size(im,1),size(im,2),size(im,3),size(im,4)*8)
-    l_out = zeros(Float32,size(ll,1),size(ll,2),size(ll,3),size(ll,4)*8)
+    rot_size = 0
+    flip_x_size = 0
+    flip_y_size = 0
+    if aug.rotation
+        rot_size += length(aug.rotation_angles)
+    end
+    if aug.flip_x
+        flip_x_size = 1
+    end
+    if aug.flip_y 
+        flip_y_size = 1
+    end
+    array_size = rot_size + flip_x_size + flip_y_size + 1
+
+    im_out = zeros(Float32,size(im,1),size(im,2),size(im,3),size(im,4) * array_size)
+    l_out = zeros(Float32,size(ll,1),size(ll,2),size(ll,3),size(ll,4) * array_size)
 
     count=1
 
