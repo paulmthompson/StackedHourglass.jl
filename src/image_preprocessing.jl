@@ -9,12 +9,13 @@ mutable struct ImageAugmentation
     rotation_angles::Array{Float64,1}
     flip_x::Bool
     flip_y::Bool
+    set_bw::Bool
 end
 
 function ImageAugmentation()
 
     default_rotations = [pi/6, pi/2, pi, 3*pi/2, -pi/6]
-    ImageAugmentation(true,default_rotations,true,true)
+    ImageAugmentation(true,default_rotations,true,true,true)
 end
 
 function rotation_augmentation(im,ll,im_out,l_out,ind,aug::ImageAugmentation,count)
@@ -30,15 +31,42 @@ function rotation_augmentation(im,ll,im_out,l_out,ind,aug::ImageAugmentation,cou
     count
 end
 
-function flip_x_augmentation(img,ll,img_out,l_out,ind,aug::ImageAugmentation,count)
+function flip_x_augmentation(im,ll,im_out,l_out,ind,aug::ImageAugmentation,count)
     im_out[:,:,:,count] = reverse(im[:,:,:,ind],dims=1)
     l_out[:,:,:,count] = reverse(ll[:,:,:,ind],dims=1)
     count+=1
 end
 
-function flip_y_augmentation(img,ll,img_out,l_out,ind,aug::ImageAugmentation,count)
+function flip_y_augmentation(im,ll,im_out,l_out,ind,aug::ImageAugmentation,count)
     im_out[:,:,:,count] = reverse(im[:,:,:,ind],dims=2)
     l_out[:,:,:,count] = reverse(ll[:,:,:,ind],dims=2)
+    count+=1
+end
+
+function random_block(xdim,ydim,max_length)
+
+    x1 = rand(1:div(xdim,2))
+    x2 = rand(x1:(x1+max_length))
+    y1 = rand(1:div(ydim,2))
+    y2 = rand(y1:(y1+max_length))
+
+    (x1,x2,y1,y2)
+end
+
+function flip_bw_augmentation(im,ll,im_out,l_out,ind,aug::ImageAugmentation,count)
+
+    #Random Black
+    (x1,x2,y1,y2) = random_block(size(im,1),size(im,2),5)
+    im_out[:,:,:,count] = im[:,:,:,ind]
+    l_out[:,:,:,count] = ll[:,:,:,ind]
+    im_out[x1:x2,y1:y2,:,count] .= 0.0
+    count+=1
+
+    #Random White
+    (x1,x2,y1,y2) = random_block(size(im,1),size(im,2),5)
+    im_out[:,:,:,count] = im[:,:,:,ind]
+    l_out[:,:,:,count] = ll[:,:,:,ind]
+    im_out[x1:x2,y1:y2,:,count] .= 1.0
     count+=1
 end
 
@@ -47,16 +75,20 @@ function image_augmentation(im,ll,aug::ImageAugmentation)
     rot_size = 0
     flip_x_size = 0
     flip_y_size = 0
+    set_bw_size = 0
     if aug.rotation
         rot_size += length(aug.rotation_angles)
     end
     if aug.flip_x
         flip_x_size = 1
     end
-    if aug.flip_y 
+    if aug.flip_y
         flip_y_size = 1
     end
-    array_size = rot_size + flip_x_size + flip_y_size + 1
+    if aug.set_bw
+        set_bw_size = 2
+    end
+    array_size = rot_size + flip_x_size + flip_y_size + set_bw_size + 1
 
     im_out = zeros(Float32,size(im,1),size(im,2),size(im,3),size(im,4) * array_size)
     l_out = zeros(Float32,size(ll,1),size(ll,2),size(ll,3),size(ll,4) * array_size)
@@ -74,12 +106,16 @@ function image_augmentation(im,ll,aug::ImageAugmentation)
 
         #Flip x
         if aug.flip_x
-            count = flip_x_augmentation(img,ll,img_out,l_out,i,aug,count)
+            count = flip_x_augmentation(im,ll,im_out,l_out,i,aug,count)
         end
 
         #Flip Y
         if aug.flip_y
-            count = flip_y_augmentation(img,ll,img_out,l_out,i,aug,count)
+            count = flip_y_augmentation(im,ll,im_out,l_out,i,aug,count)
+        end
+
+        if aug.set_bw
+            count = flip_bw_augmentation(im,ll,im_out,l_out,i,aug,count)
         end
 
         # 0.75 Scale (zoom in)
