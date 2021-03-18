@@ -12,7 +12,15 @@ function myfree(x::KnetArray)
     Knet.freeKnetPtr(x.ptr)
 end
 
-gaussian_2d(x,y,x0,y0)=[1/sqrt.(2 .* pi) .* exp.(-1 .* ((xi .- x0).^2 + (yi .- y0).^2)) for xi in x, yi in y]
+function gaussian_2d(x,y,x0,y0,sig_x=1,sig_y=1)
+    out=[exp.(-1/2 .* ((xi .- x0).^2 ./sig_x^2 + (yi .- y0).^2 ./sig_y^2)) for xi in x, yi in y]
+    out./sum(out)
+end
+
+function gaussian_1d(x,x0,sig)
+    [1/(sig*sqrt(2*pi))*exp.(-1/2 .* ((xi .- x0).^2 ./sig_x^2)) for xi in x]
+end
+
 
 function calculate_sigma((in_x,in_y),(out_x,out_y))
     (0.75 * in_x/out_x , 0.75 * in_y/out_y)
