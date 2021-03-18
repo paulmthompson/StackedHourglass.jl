@@ -18,7 +18,7 @@ function gaussian_2d(x,y,x0,y0,sig_x=1,sig_y=1)
 end
 
 function gaussian_1d(x,x0,sig)
-    [1/(sig*sqrt(2*pi))*exp.(-1/2 .* ((xi .- x0).^2 ./sig_x^2)) for xi in x]
+    [1/(sig*sqrt(2*pi))*exp.(-1/2 .* ((xi .- x0).^2 ./sig^2)) for xi in x]
 end
 
 
