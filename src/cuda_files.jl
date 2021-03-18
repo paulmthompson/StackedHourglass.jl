@@ -37,21 +37,16 @@ end
 
 function _CUDA_resize4(pIn,pOut,w_in,h_in,w_out,h_out,n)
 
-    index_i = blockDim().y * (blockIdx().y-1) + threadIdx().y
-    index_j = blockDim().x * (blockIdx().x-1) + threadIdx().x
+    c = blockIdx().z
+    b = blockIdx().y
+    a = threadIdx().x
 
-    stride_i = blockDim().y * gridDim().y
-    stride_j = blockDim().x * gridDim().x
-
-    for k=1:n
-        for j=index_j:stride_j:h_out
-            for i=index_i:stride_i:w_out
-                jIn = div(j*h_in, h_out)
-                iIn = div(i*w_in, w_out)
-                @inbounds pOut[i,j,1,k] = pIn[iIn,jIn,1,k]
-            end
-        end
+    if ((a <= h_out)&&(b <= w_out))&&(c <=n)
+        jIn = div(b*h_in, h_out)
+        iIn = div(a*w_in, w_out)
+        @inbounds pOut[a,b,1,c] = pIn[iIn,jIn,1,c]
     end
+
     return
 end
 
@@ -60,12 +55,12 @@ function _CUDA_resize4(pIn,pOut)
 end
 
 function CUDA_resize4(pIn,pOut)
-    @static if VERSION > v"1.5-"
-        #CUDA.@sync @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
-        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
-    else
-        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize4(pIn,pOut)
-    end
+    numblocks_x = 256
+    numblocks_y = size(pOut,2)
+    numblocks_z = size(pOut,4)
+
+    CuArrays.@sync @cuda threads=256 blocks=(numblocks_y,numblocks_z) _CUDA_resize4(pIn,pOut)
+
 end
 
 function _CUDA_normalize_images(pIn,meanImg,h_out,w_out,n)
