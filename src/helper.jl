@@ -14,6 +14,10 @@ end
 
 gaussian_2d(x,y,x0,y0)=[1/sqrt.(2 .* pi) .* exp.(-1 .* ((xi .- x0).^2 + (yi .- y0).^2)) for xi in x, yi in y]
 
+function calculate_sigma((in_x,in_y),(out_x,out_y))
+    (0.75 * in_x/out_x , 0.75 * in_y/out_y)
+end
+
 function create_padded_kernel(size_x,size_y,kl)
     kernel = gaussian_2d(collect(-kl:1:kl),collect(-kl:1:kl),0,0)
     kernel = kernel ./ maximum(kernel)
