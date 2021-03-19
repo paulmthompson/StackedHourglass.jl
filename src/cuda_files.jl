@@ -37,8 +37,8 @@ end
 
 function _CUDA_resize4(pIn,pOut,w_in,h_in,w_out,h_out,n)
 
-    c = blockIdx().z
-    b = blockIdx().y
+    c = blockIdx().y
+    b = blockIdx().x
     a = threadIdx().x
 
     if ((a <= h_out)&&(b <= w_out))&&(c <=n)
@@ -55,12 +55,10 @@ function _CUDA_resize4(pIn,pOut)
 end
 
 function CUDA_resize4(pIn,pOut)
-    numblocks_x = 256
-    numblocks_y = size(pOut,2)
-    numblocks_z = size(pOut,4)
+    numblocks_x = size(pOut,2)
+    numblocks_y = size(pOut,4)
 
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_y,numblocks_z) _CUDA_resize4(pIn,pOut)
-
+    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y) _CUDA_resize4(pIn,pOut)
 end
 
 function _CUDA_normalize_images(pIn,meanImg,h_out,w_out,n)
@@ -157,6 +155,28 @@ function _CUDA_blur_x(pIn,pOut,w_in,h_in,gauss,n)
     return nothing
 end
 
+function _CUDA_blur_x(pIn,pOut,gauss)
+    _CUDA_blur_x(pIn,pOut,size(pIn,1),size(pIn,2),gauss,size(pIn,4))
+end
+
+function CUDA_blur_x(pIn,pOut,gauss)
+    numblocks_x = ceil(Int,size(pOut,1)/ 256)
+    numblocks_y = size(pOut,2)
+    numblocks_z = size(pOut,4)
+    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_x(pIn,pOut,gauss)
+end
+
+function _CUDA_blur_y(pIn,pOut,gauss)
+    _CUDA_blur_y(pIn,pOut,size(pIn,1),size(pIn,2),gauss,size(pIn,4))
+end
+
+function CUDA_blur_y(pIn,pOut,gauss)
+    numblocks_x = ceil(Int,size(pOut,2)/ 256)
+    numblocks_y = size(pOut,1)
+    numblocks_z = size(pOut,4)
+    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_x(pIn,pOut,gauss)
+end
+
 function _CUDA_blur_y(pIn,pOut,w_in,h_in,gauss,n)
 
     c = blockIdx().z
@@ -183,26 +203,4 @@ function _CUDA_blur_y(pIn,pOut,w_in,h_in,gauss,n)
         a += blockDim().x*blockIdx().x
     end
     return nothing
-end
-
-function _CUDA_blur_x(pIn,pOut,gauss)
-    _CUDA_blur_x(pIn,pOut,size(pIn,1),size(pIn,2),gauss,size(pIn,4))
-end
-
-function CUDA_blur_x(pIn,pOut,gauss)
-    numblocks_x = ceil(Int,size(pOut,1)/ 256)
-    numblocks_y = size(pOut,2)
-    numblocks_z = size(pOut,4)
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_x(pIn,pOut,gauss)
-end
-
-function _CUDA_blur_y(pIn,pOut,gauss)
-    _CUDA_blur_y(pIn,pOut,size(pIn,1),size(pIn,2),gauss,size(pIn,4))
-end
-
-function CUDA_blur_y(pIn,pOut,gauss)
-    numblocks_x = ceil(Int,size(pOut,2)/ 256)
-    numblocks_y = size(pOut,1)
-    numblocks_z = size(pOut,4)
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_x(pIn,pOut,gauss)
 end
