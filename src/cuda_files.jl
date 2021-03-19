@@ -133,7 +133,7 @@ function _CUDA_blur_x(pIn,pOut,w_in,h_in,gauss,n)
     b = blockIdx().y
     a = threadIdx().x
 
-    while (a<w_in)
+    while (a<=w_in)
         if ((a <= w_in)&&(b <= h_in))&&(c <=n)
             temp = 0.0
             for yy = 1:9
@@ -174,7 +174,7 @@ function CUDA_blur_y(pIn,pOut,gauss)
     numblocks_x = ceil(Int,size(pOut,2)/ 256)
     numblocks_y = size(pOut,1)
     numblocks_z = size(pOut,4)
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_x(pIn,pOut,gauss)
+    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_y(pIn,pOut,gauss)
 end
 
 function _CUDA_blur_y(pIn,pOut,w_in,h_in,gauss,n)
@@ -183,7 +183,7 @@ function _CUDA_blur_y(pIn,pOut,w_in,h_in,gauss,n)
     b = blockIdx().y
     a = threadIdx().x
 
-    while (a<w_in)
+    while (a<=h_in)
         if ((a <= h_in)&&(b <= w_in))&&(c <=n)
             temp = 0.0
             for yy = 1:9
@@ -198,7 +198,7 @@ function _CUDA_blur_y(pIn,pOut,w_in,h_in,gauss,n)
 
                 @inbounds temp = temp + Float32(pIn[b,new_y,1,c]) * gauss[yy]
             end
-            @inbounds pOut[a,b,1,c] = temp
+            @inbounds pOut[b,a,1,c] = temp
         end
         a += blockDim().x*blockIdx().x
     end
