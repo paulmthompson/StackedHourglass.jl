@@ -204,3 +204,27 @@ function _CUDA_blur_y(pIn,pOut,w_in,h_in,gauss,n)
     end
     return nothing
 end
+
+function _CUDA_flip_xy(pIn,pOut,w_in,h_in,n)
+
+    c = blockIdx().y
+    b = blockIdx().x
+    a = threadIdx().x
+
+    if ((a <= h_in)&&(b <= w_in))&&(c <=n)
+        @inbounds pOut[a,b,1,c] = pIn[b,a,1,c]
+    end
+
+    return
+end
+
+function _CUDA_flip_xy(pIn,pOut)
+    _CUDA_flip_xy(pIn,pOut,size(pIn,1),size(pIn,2),size(pIn,4))
+end
+
+function CUDA_flip_xy(pIn,pOut)
+    numblocks_x = size(pOut,2)
+    numblocks_y = size(pOut,4)
+
+    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y) _CUDA_flip_xy(pIn,pOut)
+end
