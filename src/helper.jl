@@ -26,6 +26,17 @@ function calculate_sigma((in_x,in_y),(out_x,out_y))
     (0.75 * in_x/out_x , 0.75 * in_y/out_y)
 end
 
+function get_xy_gauss_cu((in_w,in_h),(out_w,out_h))
+
+    (sig_x,sig_y) = StackedHourglass.calculate_sigma((in_w,in_h),(out_w,out_h))
+    gauss_x = StackedHourglass.gaussian_1d(collect(-4:4),0,sig_x)
+    gauss_x_cu = convert(CuArray,gauss_x);
+    gauss_y = StackedHourglass.gaussian_1d(collect(-4:4),0,sig_y)
+    gauss_y_cu = convert(CuArray,gauss_y);
+
+    (gauss_x_cu, gauss_y_cu)
+end
+
 function create_padded_kernel(size_x,size_y,kl)
     kernel = gaussian_2d(collect(-kl:1:kl),collect(-kl:1:kl),0,0)
     kernel = kernel ./ maximum(kernel)
