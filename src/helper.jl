@@ -46,14 +46,35 @@ function create_padded_kernel(size_x,size_y,kl)
 end
 
 #https://github.com/JuliaImages/ImageTransformations.jl/blob/master/src/resizing.jl#L239
-function lowpass_filter_resize(img,sz)
+function lowpass_filter_resize(img::AbstractArray{T,2},sz::Tuple) where T
 
     σ = map((o,n)->0.75*o/n, size(img), sz)
     kern = KernelFactors.gaussian(σ)
-    imgr = imresize(imfilter(img, kern, NA()), sz)
+    imgr = imresize(imfilter(img, kern, NA()), sz) #Can include method here in newest ImageTransformations
 end
 
-function predict_single_frame(hg,img)
+function low_pass_pyramid(im::AbstractArray{T,2},sz::Tuple) where T
+    new_sz = (div(size(im,1),2),div(size(im,2),2))
+    im2 = deepcopy(im)
+    while ((new_sz[1] > sz[1])&&(new_sz[2] > sz[2]))
+        im2=lowpass_filter_resize(im2,(new_sz))
+        #im2 = im2 ./ maximum(im2)
+        new_sz = (div(new_sz[1],2),div(new_sz[2],2))
+    end
+    im2=lowpass_filter_resize(im2,(sz))
+end
+
+function upsample_pyramid(im::AbstractArray{T,2},sz::Tuple) where T
+    new_sz = (size(im,1)*2,size(im,2)*2)
+    im2 = deepcopy(im)
+    while ((new_sz[1] <= sz[1])&&(new_sz[2] <= sz[2]))
+        im2=lowpass_filter_resize(im2,(new_sz))
+        new_sz = (new_sz[1]*2,new_sz[2]*2)
+    end
+    im2=lowpass_filter_resize(im2,(sz))
+end
+
+function predict_single_frame(hg,img::AbstractArray{T,2}) where T
 
     temp_frame = convert(Array{Float32,2},img)
     temp_frame = convert(Array{Float32,2},lowpass_filter_resize(temp_frame,(256,256)))
