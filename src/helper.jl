@@ -48,9 +48,20 @@ end
 #https://github.com/JuliaImages/ImageTransformations.jl/blob/master/src/resizing.jl#L239
 function lowpass_filter_resize(img::AbstractArray{T,2},sz::Tuple) where T
 
-    σ = map((o,n)->0.75*o/n, size(img), sz)
-    kern = KernelFactors.gaussian(σ)
+    kern = make_gaussian_kernel(size(img),sz)
     imgr = imresize(imfilter(img, kern, NA()), sz) #Can include method here in newest ImageTransformations
+end
+
+function lowpass_filter_resize!(img::AbstractArray{T,2},output::AbstractArray{T,2},kern) where T
+
+    imfilter!(img, img,kern, NA())
+    ImageTransformations.imresize!(output, img) #Can include method here in newest ImageTransformations
+    nothing
+end
+
+function make_gaussian_kernel(in_sz::Tuple,out_sz::Tuple)
+    σ = map((o,n)->0.75*o/n, in_sz, out_sz)
+    KernelFactors.gaussian(σ)
 end
 
 function low_pass_pyramid(im::AbstractArray{T,2},sz::Tuple) where T

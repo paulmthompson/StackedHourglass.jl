@@ -27,6 +27,7 @@ const HGType = Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}}
 include("residual.jl")
 include("hourglass.jl")
 
+include("gaussian_pyramids.jl")
 include("cuda_files.jl")
 include("helper.jl")
 include("load.jl")
