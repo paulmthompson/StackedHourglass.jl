@@ -26,13 +26,7 @@ function _CUDA_resize(pIn,pOut,w_in,h_in,w_out,h_out)
 end
 
 function CUDA_resize(pIn,pOut)
-    @static if VERSION > v"1.5-"
-        #CUDA.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
-        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
-    else
-        CuArrays.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
-    end
-
+    CUDA.@sync @cuda threads=(16,16) _CUDA_resize(pIn,pOut)
 end
 
 function _CUDA_resize4(pIn,pOut,w_in,h_in,w_out,h_out,n)
@@ -58,7 +52,7 @@ function CUDA_resize4(pIn,pOut)
     numblocks_x = size(pOut,2)
     numblocks_y = size(pOut,4)
 
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y) _CUDA_resize4(pIn,pOut)
+    CUDA.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y) _CUDA_resize4(pIn,pOut)
 end
 
 function _CUDA_normalize_images(pIn,meanImg,h_out,w_out,n)
@@ -84,12 +78,7 @@ function _CUDA_normalize_images(pIn,meanImg)
 end
 
 function CUDA_normalize_images(pIn,meanImg)
-    @static if VERSION > v"1.5-"
-        #CUDA.@sync @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
-        CuArrays.@sync @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
-    else
-        CuArrays.@sync @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
-    end
+    CUDA.@sync @cuda threads=256 _CUDA_normalize_images(pIn,meanImg)
 end
 
 function CUDA_preprocess(pIn,pOut)
@@ -99,12 +88,8 @@ function CUDA_preprocess(pIn,pOut)
     h_in=size(pIn,2)
     w_out=size(pOut,1)
     h_out=size(pOut,2)
-    @static if VERSION > v"1.5-"
-        #CUDA.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
-        CuArrays.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
-    else
-        CuArrays.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
-    end
+
+    CUDA.@sync @cuda threads=(16,16) _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
 end
 
 function _CUDA_preprocess(pIn,pOut,w_in,h_in,w_out,h_out,n)
@@ -163,7 +148,7 @@ function CUDA_blur_x(pIn,pOut,gauss)
     numblocks_x = ceil(Int,size(pOut,1)/ 256)
     numblocks_y = size(pOut,2)
     numblocks_z = size(pOut,4)
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_x(pIn,pOut,gauss)
+    CUDA.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_x(pIn,pOut,gauss)
 end
 
 function _CUDA_blur_y(pIn,pOut,gauss)
@@ -174,7 +159,7 @@ function CUDA_blur_y(pIn,pOut,gauss)
     numblocks_x = ceil(Int,size(pOut,2)/ 256)
     numblocks_y = size(pOut,1)
     numblocks_z = size(pOut,4)
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_y(pIn,pOut,gauss)
+    CUDA.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y,numblocks_z) _CUDA_blur_y(pIn,pOut,gauss)
 end
 
 function _CUDA_blur_y(pIn,pOut,w_in,h_in,gauss,n)
@@ -226,5 +211,5 @@ function CUDA_flip_xy(pIn,pOut)
     numblocks_x = size(pOut,2)
     numblocks_y = size(pOut,4)
 
-    CuArrays.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y) _CUDA_flip_xy(pIn,pOut)
+    CUDA.@sync @cuda threads=256 blocks=(numblocks_x,numblocks_y) _CUDA_flip_xy(pIn,pOut)
 end
