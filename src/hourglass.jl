@@ -120,6 +120,11 @@ struct HG2 <: NN
     merge_preds::Array{Conv0,1}
 end
 
+#=
+N = Number of Channels (64 default)
+K = number of features for prediction
+nstack = number of hourglasses
+=#
 function HG2(N,K,nstack)
     fb = FirstBlock(N)
 
