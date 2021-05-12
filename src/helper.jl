@@ -9,7 +9,7 @@ function myfree(x::AutoGrad.Result)
 end
 
 function myfree(x::KnetArray)
-    Knet.freeKnetPtr(x.ptr)
+    Knet.KnetArrays.freeKnetPtr(x.ptr)
 end
 
 function gaussian_2d(x,y,x0,y0,sig_x=1,sig_y=1)
