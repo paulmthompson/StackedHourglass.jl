@@ -1,10 +1,10 @@
 
 
 mutable struct Conv1 <: NN
-    w::Param{KnetArray{Float32,4}} #weights
-    b::Param{KnetArray{Float32,4}} #biases
+    w::PType4 #weights
+    b::PType4 #biases
     ms::KnetMoment #batch norm moments
-    bn_p::Param{KnetArray{Float32,1}} #batch norm parameters
+    bn_p::PType1 #batch norm parameters
     stride::Int64
     padding::Int64
     training::Bool
@@ -21,11 +21,16 @@ function (c::Conv1)(x::HGType)
     output2
 end
 
-function Conv1(in_dim,out_dim,k_s,stride,padding)
-    bn_p = Param(convert(KnetArray{Float32,1},bnparams(in_dim)))
+function Conv1(in_dim::Int,out_dim::Int,k_s,stride,padding,atype=KnetArray)
+
+    bn_p = bnparams(Float32,in_dim)
+    bn_p = Param(convert(atype{Float32,1},bn_p))
     ms = bnmoments()
-    w = Param(convert(KnetArray,xavier_normal(Float32,k_s,k_s,in_dim,out_dim)))
-    b = Param(convert(KnetArray,xavier_normal(Float32,1,1,out_dim,1)))
+
+    w = xavier_normal(Float32,k_s,k_s,in_dim,out_dim)
+    b = xavier_normal(Float32,1,1,out_dim,1)
+    w = Param(convert(atype,w))
+    b = Param(convert(atype,b))
     Conv1(w,b,ms,bn_p,stride,padding,true)
 end
 
@@ -35,8 +40,8 @@ function set_testing(f::Conv1,training=false)
 end
 
 mutable struct Conv0 <: NN
-    w::Param{KnetArray{Float32,4}} #weights
-    b::Param{KnetArray{Float32,4}} #biases
+    w::PType4 #weights
+    b::PType4 #biases
     stride::Int64
     padding::Int64
 end
@@ -50,9 +55,11 @@ function (c::Conv0)(x::HGType)
     out2
 end
 
-function Conv0(in_dim,out_dim,k_s,stride,padding)
-    w = Param(convert(KnetArray,xavier_normal(Float32,k_s,k_s,in_dim,out_dim)))
-    b = Param(convert(KnetArray,xavier_normal(Float32,1,1,out_dim,1)))
+function Conv0(in_dim::Int,out_dim::Int,k_s,stride,padding,atype=KnetArray)
+    w = xavier_normal(Float32,k_s,k_s,in_dim,out_dim)
+    b = xavier_normal(Float32,1,1,out_dim,1)
+    w = Param(convert(atype,w))
+    b = Param(convert(atype,b))
     Conv0(w,b,stride,padding)
 end
 
@@ -72,10 +79,10 @@ function (r::Residual)(x::HGType)
     output
 end
 
-function Residual(in_dim,out_dim)
-    c1=Conv1(in_dim,div(out_dim,2),1,1,0)
-    c2=Conv1(div(out_dim,2),div(out_dim,2),3,1,1)
-    c3=Conv1(div(out_dim,2),out_dim,1,1,0)
+function Residual(in_dim::Int,out_dim::Int,atype=KnetArray)
+    c1=Conv1(in_dim,div(out_dim,2),1,1,0,atype)
+    c2=Conv1(div(out_dim,2),div(out_dim,2),3,1,1,atype)
+    c3=Conv1(div(out_dim,2),out_dim,1,1,0,atype)
     Residual(c1,c2,c3)
 end
 
@@ -87,8 +94,8 @@ function set_testing(f::Residual,training=false)
 end
 
 mutable struct Residual_skip <: NN
-    w::Param{KnetArray{Float32,4}}
-    b::Param{KnetArray{Float32,4}}
+    w::PType4
+    b::PType4
     c1::Conv1
     c2::Conv1
     c3::Conv1
@@ -106,12 +113,15 @@ function (r::Residual_skip)(x::HGType)
     output
 end
 
-function Residual_skip(in_dim,out_dim)
-    c1=Conv1(in_dim,div(out_dim,2),1,1,0)
-    c2=Conv1(div(out_dim,2),div(out_dim,2),3,1,1)
-    c3=Conv1(div(out_dim,2),out_dim,1,1,0)
-    w=Param(convert(KnetArray,xavier_normal(Float32,1,1,in_dim,out_dim)))
-    b=Param(convert(KnetArray,xavier_normal(Float32,1,1,out_dim,1)))
+function Residual_skip(in_dim::Int,out_dim::Int,atype=KnetArray)
+    c1=Conv1(in_dim,div(out_dim,2),1,1,0,atype)
+    c2=Conv1(div(out_dim,2),div(out_dim,2),3,1,1,atype)
+    c3=Conv1(div(out_dim,2),out_dim,1,1,0,atype)
+
+    w = xavier_normal(Float32,1,1,in_dim,out_dim)
+    b = xavier_normal(Float32,1,1,out_dim,1)
+    w=Param(convert(atype,w))
+    b=Param(convert(atype,b))
     Residual_skip(w,b,c1,c2,c3)
 end
 

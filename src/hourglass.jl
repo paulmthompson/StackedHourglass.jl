@@ -2,10 +2,10 @@
 
 mutable struct Out_Layer <: NN
     r1::Residual
-    w::Param{KnetArray{Float32,4}} #weights
-    b::Param{KnetArray{Float32,4}} #biases
+    w::PType4 #weights
+    b::PType4#biases
     ms::KnetMoment #batch norm moments
-    bn_p::Param{KnetArray{Float32,1}} #batch norm parameters
+    bn_p::PType1 #batch norm parameters
     training::Bool
 end
 
@@ -21,12 +21,16 @@ function (c::Out_Layer)(x::HGType)
     out3
 end
 
-function Out_Layer(in_dim)
-    r1=Residual(in_dim,in_dim)
-    bn_p = Param(convert(KnetArray{Float32,1},bnparams(in_dim)))
+function Out_Layer(in_dim::Int,atype=KnetArray)
+    r1=Residual(in_dim,in_dim,atype)
+    bn_p = bnparams(Float32,in_dim)
+    bn_p = Param(convert(atype{Float32,1},bn_p))
     ms = bnmoments()
-    w = Param(convert(KnetArray,xavier_normal(Float32,1,1,in_dim,in_dim)))
-    b = Param(convert(KnetArray,xavier_normal(Float32,1,1,in_dim,1)))
+
+    w = xavier_normal(Float32,1,1,in_dim,in_dim)
+    b = xavier_normal(Float32,1,1,in_dim,1)
+    w = Param(convert(atype,w))
+    b = Param(convert(atype,b))
     Out_Layer(r1,w,b,ms,bn_p,true)
 end
 
@@ -43,7 +47,7 @@ struct FirstBlock <: NN
     r2::Residual
     r3::Residual_skip
 end
-FirstBlock(N)=FirstBlock(Conv1(3,64,7,2,3),Residual_skip(64,128),Pool(),Residual(128,128),Residual_skip(128,N))
+FirstBlock(N::Int,atype=KnetArray)=FirstBlock(Conv1(3,64,7,2,3,atype),Residual_skip(64,128,atype),Pool(),Residual(128,128,atype),Residual_skip(128,N,atype))
 
 function (f::FirstBlock)(x::HGType)
     c1=f.c1(x)
@@ -73,16 +77,16 @@ struct Hourglass <: NN
     up2::Unpool
 end
 
-function Hourglass(n,f_num)
-    up1 = Residual(f_num,f_num)
+function Hourglass(n::Int,f_num::Int,atype=KnetArray)
+    up1 = Residual(f_num,f_num,atype)
     pool1 = Pool()
-    low1 = Residual(f_num,f_num)
+    low1 = Residual(f_num,f_num,atype)
     if n > 1
-        low2 = Hourglass(n-1,f_num)
+        low2 = Hourglass(n-1,f_num,atype)
     else
-        low2 = Residual(f_num,f_num)
+        low2 = Residual(f_num,f_num,atype)
     end
-    low3 = Residual(f_num,f_num)
+    low3 = Residual(f_num,f_num,atype)
     up2 = Unpool()
     Hourglass(n,up1,pool1,low1,low2,low3,up2)
 end
@@ -125,14 +129,14 @@ N = Number of Channels (64 default)
 K = number of features for prediction
 nstack = number of hourglasses
 =#
-function HG2(N,K,nstack)
-    fb = FirstBlock(N)
+function HG2(N::Int,K::Int,nstack::Int,atype=KnetArray)
+    fb = FirstBlock(N,atype)
 
-    hg=[Hourglass(4,N) for i=1:nstack];
-    o1=[Out_Layer(N) for i=1:nstack];
-    c1=[Conv0(N,K,1,1,0) for i=1:nstack];
-    merge_features=[Conv0(N,N,1,1,0) for i=1:(nstack-1)]
-    merge_preds=[Conv0(K,N,1,1,0) for i=1:(nstack-1)]
+    hg=[Hourglass(4,N,atype) for i=1:nstack];
+    o1=[Out_Layer(N,atype) for i=1:nstack];
+    c1=[Conv0(N,K,1,1,0,atype) for i=1:nstack];
+    merge_features=[Conv0(N,N,1,1,0,atype) for i=1:(nstack-1)]
+    merge_preds=[Conv0(K,N,1,1,0,atype) for i=1:(nstack-1)]
     HG2(nstack,fb,hg,o1,c1,merge_features,merge_preds)
 end
 
@@ -141,8 +145,8 @@ features(hg::HG2)=size(hg.merge_preds[1].w,3)
 function (h::HG2)(x::HGType)
     temp=h.fb(x)
 
-    preds=Array{HGType,1}() #Can this be typed to be the same as input?
-    temps=Array{HGType,1}(undef,h.nstack) #Can this be typed to be the same as input?
+    preds=Array{typeof(temp),1}() #Can this be typed to be the same as input?
+    temps=Array{typeof(temp),1}(undef,h.nstack) #Can this be typed to be the same as input?
     temps[1]=temp
     for i=1:h.nstack
         hg=h.hg[i](temps[i])
@@ -169,9 +173,9 @@ end
 
 function (h::HG2)(x,y)
     preds=h(x)
-    loss=0.0
+    loss=0.0f0
     for i=1:h.nstack
-        loss+=pixel_mse(y,preds[i])
+        loss += pixel_mse(y,preds[i])
     end
     loss
 end

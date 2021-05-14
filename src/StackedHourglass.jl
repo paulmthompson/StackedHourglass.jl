@@ -1,13 +1,13 @@
 module StackedHourglass
 
-#Deep Learning Libraries
-#if VERSION > v"1.5-"
-    using CUDA, Knet
-    const KnetMoment = Knet.Ops20.BNMoments
-#else
-    #using CuArrays, CuArrays.CUFFT, CUDAnative, Knet
-    #const KnetMoment = Knet.BNMoments
-#end
+
+using CUDA, Knet
+const KnetMoment = Knet.Ops20.BNMoments
+
+using Knet.CuArrays
+#using Knet.Ops20: batchnorm, bnmoments, bnparams, relu
+#using Knet.Train20: xavier_normal, minimize
+
 
 #standard Library
 using Distributed, Random
@@ -21,7 +21,10 @@ export HG2
 export subpixel, set_testing, save_hourglass, load_hourglass, features
 
 abstract type NN end;
-const HGType = Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}}}
+const HGType = Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}},CuArray{Float32,4},AutoGrad.Result{CuArray{Float32,4}}}
+
+const PType1 = Union{Param{KnetArray{Float32,1}},Param{CuArray{Float32,1}}}
+const PType4 = Union{Param{KnetArray{Float32,4}},Param{CuArray{Float32,4}}}
 
 include("residual.jl")
 include("hourglass.jl")

@@ -143,35 +143,35 @@ end
 #=
 Change the number of input or output features or dimensions for hourglass model
 =#
-function change_hourglass(hg,feature_num,input_dim,output_dim)
+function change_hourglass(hg::HG2,feature_num::Int,input_dim::Int,output_dim::Int,atype=KnetArray)
 
-    change_hourglass_input(hg,feature_num,input_dim)
-    change_hourglass_output(hg,feature_num,output_dim)
+    change_hourglass_input(hg,feature_num,input_dim,atype)
+    change_hourglass_output(hg,feature_num,output_dim,atype)
 
     nothing
 end
 
-function change_hourglass_input(hg,feature_num,input_dim)
+function change_hourglass_input(hg::HG2,feature_num::Int,input_dim::Int,atype=KnetArray)
 
     #Input transform
-    hg.fb.c1.w = Param(convert(KnetArray,xavier_normal(Float32,7,7,input_dim,64)))
-    hg.fb.c1.b = Param(convert(KnetArray,xavier_normal(Float32,1,1,64,1)))
-    hg.fb.c1.bn_p = Param(convert(KnetArray{Float32,1},bnparams(1)))
+    hg.fb.c1.w = Param(convert(atype,xavier_normal(Float32,7,7,input_dim,64)))
+    hg.fb.c1.b = Param(convert(atype,xavier_normal(Float32,1,1,64,1)))
+    hg.fb.c1.bn_p = Param(convert(atype{Float32,1},bnparams(1)))
     hg.fb.c1.ms = bnmoments()
 
     nothing
 end
 
-function change_hourglass_output(hg,feature_num,output_dim)
+function change_hourglass_output(hg::HG2,feature_num::Int,output_dim::Int,atype=KnetArray)
 
     for i=1:length(hg.c1)
-        hg.c1[i].w = Param(convert(KnetArray,xavier_normal(Float32,1,1,feature_num,output_dim)))
-        hg.c1[i].b = Param(convert(KnetArray,xavier_normal(Float32,1,1,output_dim,1)))
+        hg.c1[i].w = Param(convert(atype,xavier_normal(Float32,1,1,feature_num,output_dim)))
+        hg.c1[i].b = Param(convert(atype,xavier_normal(Float32,1,1,output_dim,1)))
     end
 
     for i=1:length(hg.merge_preds)
-        hg.merge_preds[i].w = Param(convert(KnetArray,xavier_normal(Float32,1,1,output_dim,feature_num)))
-        hg.merge_preds[i].b = Param(convert(KnetArray,xavier_normal(Float32,1,1,feature_num,1)))
+        hg.merge_preds[i].w = Param(convert(atype,xavier_normal(Float32,1,1,output_dim,feature_num)))
+        hg.merge_preds[i].b = Param(convert(atype,xavier_normal(Float32,1,1,feature_num,1)))
     end
 
     nothing

@@ -1,5 +1,5 @@
 
-function pixel_mse(truth::KnetArray{Float32,4},pred::HGType)
+function pixel_mse(truth::Union{KnetArray{Float32,4},CuArray{Float32,4}},pred::HGType)
     loss = sum((pred .- truth).^2)
     loss / (size(pred,3) * size(pred,4))
 end
@@ -10,6 +10,9 @@ end
 
 function myfree(x::KnetArray)
     Knet.KnetArrays.freeKnetPtr(x.ptr)
+end
+
+function myfree(x::CuArray)
 end
 
 function gaussian_2d(x,y,x0,y0,sig_x=1,sig_y=1)
