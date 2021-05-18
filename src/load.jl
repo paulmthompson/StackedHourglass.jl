@@ -107,7 +107,15 @@ function load_nn(x,file,count)
                 setfield!(x,f,Param(convert(KnetArray,read(file,string("w_",count[1])))))
                 count[1]+=1
             elseif f == :b
-                setfield!(x,f,Param(convert(KnetArray,read(file,string("b_",count[1])))))
+                xx = read(file,string("b_",count[1]))
+                if typeof(xx) == Float32
+                    xxx = zeros(Float32,1,1,1,1)
+                    xxx[1] = xx
+                    setfield!(x,f,Param(convert(KnetArray,xxx)))
+                else
+                    setfield!(x,f,Param(convert(KnetArray,xx)))
+                end
+
                 count[1]+=1
             elseif f == :ms
                 x.ms.momentum=read(file,string("ms_mo_",count[1]))
@@ -156,7 +164,7 @@ function change_hourglass_input(hg::HG2,feature_num::Int,input_dim::Int,atype=Kn
     #Input transform
     hg.fb.c1.w = Param(convert(atype,xavier_normal(Float32,7,7,input_dim,64)))
     hg.fb.c1.b = Param(convert(atype,xavier_normal(Float32,1,1,64,1)))
-    hg.fb.c1.bn_p = Param(convert(atype{Float32,1},bnparams(1)))
+    hg.fb.c1.bn_p = Param(convert(atype{Float32,1},bnparams(input_dim)))
     hg.fb.c1.ms = bnmoments()
 
     nothing
