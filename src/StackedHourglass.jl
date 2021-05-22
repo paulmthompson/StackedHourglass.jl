@@ -25,6 +25,7 @@ const PType4 = Union{Param{KnetArray{Float32,4}},Param{CuArray{Float32,4}}}
 
 include("residual.jl")
 include("hourglass.jl")
+include("cuda_resizing.jl")
 
 include("gaussian_pyramids.jl")
 include("cuda_files.jl")
