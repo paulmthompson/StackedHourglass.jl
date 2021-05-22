@@ -5,9 +5,6 @@ using CUDA, Knet
 const KnetMoment = Knet.Ops20.BNMoments
 
 using Knet.CuArrays
-#using Knet.Ops20: batchnorm, bnmoments, bnparams, relu
-#using Knet.Train20: xavier_normal, minimize
-
 
 #standard Library
 using Distributed, Random

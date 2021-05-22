@@ -140,3 +140,29 @@ function get_labeled_frames(han,out_hw=256,h=480,w=640,frame_rate=25)
     end
     imgs
 end
+
+
+function batch_predict(hg::StackedHourglass.NN,input_images::CuArray{T,4},sub_input_images,
+    input_f,return_ind=4,batch_size=32,batch_per_load=4) where T
+
+    batch_predict(hg,KnetArray(input_images),sub_input_images,input_f,return_ind,batch_size,batch_per_load)
+end
+
+function batch_predict(hg::StackedHourglass.NN,input_images::KnetArray{T,4},sub_input_images::KnetArray{T,4},
+        input_f::KnetArray{T,4},return_ind=4,batch_size=32,batch_per_load=4) where T
+
+    input_hw=size(input_images,1)
+    output_hw=size(input_f,1)
+    my_features=size(input_f,3)
+
+    for k=0:(batch_per_load-1)
+        copyto!(sub_input_images,1,input_images,k*input_hw*input_hw*batch_size+1,input_hw*input_hw*batch_size)
+        myout=hg(sub_input_images)
+        copyto!(input_f,k*output_hw*output_hw*my_features*batch_size+1,myout[return_ind],1,length(myout[return_ind]))
+        for kk=1:length(myout)
+            Knet.KnetArrays.freeKnetPtr(myout[kk].ptr)
+        end
+    end
+
+    nothing
+end
