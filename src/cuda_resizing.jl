@@ -20,6 +20,8 @@ function CUDA_Resize(in_w,in_h,out_w,out_h,n)
 
     resized = convert(CuArray,zeros(Float32,out_w,out_h,1,n))
     output = convert(CuArray,zeros(Float32,out_w,out_h,1,n))
+
+    CUDA_Resize(input,xpass,ypass,gauss_x,gauss_y,resized,output)
 end
 
 function lowpass_resize(cr::CUDA_Resize,input::AbstractArray{T,4}) where T
