@@ -8,10 +8,11 @@ mutable struct CUDA_Resize
     gauss_y::CuArray{Float32,1}
 
     resized::CuArray{Float32,4}
+    flip_xy::Bool
     output::CuArray{Float32,4}
 end
 
-function CUDA_Resize(in_w,in_h,out_w,out_h,n)
+function CUDA_Resize(in_w,in_h,out_w,out_h,n,flip_xy=true)
     input = convert(CuArray,zeros(Float32,in_w,in_h,1,n))
 
     xpass = convert(CuArray,zeros(Float32,in_w,in_h,1,n))
@@ -21,7 +22,7 @@ function CUDA_Resize(in_w,in_h,out_w,out_h,n)
     resized = convert(CuArray,zeros(Float32,out_w,out_h,1,n))
     output = convert(CuArray,zeros(Float32,out_w,out_h,1,n))
 
-    CUDA_Resize(input,xpass,ypass,gauss_x,gauss_y,resized,output)
+    CUDA_Resize(input,xpass,ypass,gauss_x,gauss_y,resized,flip_xy,output)
 end
 
 function lowpass_resize(cr::CUDA_Resize,input::AbstractArray{T,4}) where T
@@ -31,7 +32,11 @@ function lowpass_resize(cr::CUDA_Resize,input::AbstractArray{T,4}) where T
     CUDA_blur_x(cr.input,cr.xpass,cr.gauss_x)
     CUDA_blur_y(cr.xpass,cr.ypass,cr.gauss_y)
     CUDA_resize4(cr.ypass,cr.resized)
-    CUDA_flip_xy(cr.resized,cr.output)
+    if cr.flip_xy
+        CUDA_flip_xy(cr.resized,cr.output)
+    else
+        cr.output[:] = cr.resized
+    end
 
     nothing
 end
