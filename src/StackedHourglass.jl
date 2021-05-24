@@ -18,10 +18,10 @@ export HG2
 export subpixel, set_testing, save_hourglass, load_hourglass, features
 
 abstract type NN end;
-const HGType = Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}},CuArray{Float32,4},AutoGrad.Result{CuArray{Float32,4}}}
+const HGType = Union{KnetArray{Float32,4},AutoGrad.Result{KnetArray{Float32,4}},Array{Float32,4},AutoGrad.Result{Array{Float32,4}}}
 
-const PType1 = Union{Param{KnetArray{Float32,1}},Param{CuArray{Float32,1}}}
-const PType4 = Union{Param{KnetArray{Float32,4}},Param{CuArray{Float32,4}}}
+const PType1 = Union{Param{KnetArray{Float32,1}},Param{Array{Float32,1}}}
+const PType4 = Union{Param{KnetArray{Float32,4}},Param{Array{Float32,4}}}
 
 include("residual.jl")
 include("hourglass.jl")

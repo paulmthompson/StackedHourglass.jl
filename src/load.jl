@@ -85,35 +85,35 @@ end
 #=
 Loading Hourglass Model
 =#
-function load_hourglass(name,x)
+function load_hourglass(name,x,atype=KnetArray)
     count=[1];
     file=matopen(name,"r")
-        load_nn(x,file,count)
+        load_nn(x,file,count,atype)
     close(file)
 end
 
-function load_nn(x,file,count)
+function load_nn(x,file,count,atype=KnetArray)
 
     for f in fieldnames(typeof(x))
         f1=getfield(x,f)
         if typeof(f1) <: NN
-            load_nn(f1,file,count)
+            load_nn(f1,file,count,atype)
         elseif eltype(f1) <: NN
             for i=1:length(f1)
-                load_nn(f1[i],file,count)
+                load_nn(f1[i],file,count,atype)
             end
         else
             if f == :w
-                setfield!(x,f,Param(convert(KnetArray,read(file,string("w_",count[1])))))
+                setfield!(x,f,Param(convert(atype,read(file,string("w_",count[1])))))
                 count[1]+=1
             elseif f == :b
                 xx = read(file,string("b_",count[1]))
                 if typeof(xx) == Float32
                     xxx = zeros(Float32,1,1,1,1)
                     xxx[1] = xx
-                    setfield!(x,f,Param(convert(KnetArray,xxx)))
+                    setfield!(x,f,Param(convert(atype,xxx)))
                 else
-                    setfield!(x,f,Param(convert(KnetArray,xx)))
+                    setfield!(x,f,Param(convert(atype,xx)))
                 end
 
                 count[1]+=1
@@ -122,25 +122,25 @@ function load_nn(x,file,count)
 
                 xx=read(file,string("ms_mean_",count[1]))
                 if typeof(xx) == Float32
-                    x.ms.mean = convert(KnetArray,[xx])
+                    x.ms.mean = convert(atype,[xx])
                 else
-                    x.ms.mean = convert(KnetArray,xx)
+                    x.ms.mean = convert(atype,xx)
                 end
 
                 xx=read(file,string("ms_var_",count[1]))
                 if typeof(xx) == Float32
-                    x.ms.var = convert(KnetArray,[xx])
+                    x.ms.var = convert(atype,[xx])
                 else
-                    x.ms.var = convert(KnetArray,xx)
+                    x.ms.var = convert(atype,xx)
                 end
 
                 count[1]+=1
             elseif f == :bn_p
                 xx = read(file,string("bn_p_",count[1]))
                 if typeof(xx) == Float32
-                    x.bn_p = Param(convert(KnetArray,[xx]))
+                    x.bn_p = Param(convert(atype,[xx]))
                 else
-                    x.bn_p = Param(convert(KnetArray,xx))
+                    x.bn_p = Param(convert(atype,xx))
                 end
                 count[1]+=1
             end

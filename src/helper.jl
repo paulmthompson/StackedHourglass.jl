@@ -15,6 +15,9 @@ end
 function myfree(x::CuArray)
 end
 
+function myfree(x::Array)
+end
+
 function gaussian_2d(x,y,x0,y0,sig_x=1,sig_y=1)
     out=[exp.(-1/2 .* ((xi .- x0).^2 ./sig_x^2 + (yi .- y0).^2 ./sig_y^2)) for xi in x, yi in y]
     out./sum(out)
@@ -88,12 +91,12 @@ function upsample_pyramid(im::AbstractArray{T,2},sz::Tuple) where T
     im2=lowpass_filter_resize(im2,(sz))
 end
 
-function predict_single_frame(hg,img::AbstractArray{T,2}) where T
+function predict_single_frame(hg,img::AbstractArray{T,2},atype=KnetArray) where T
 
     temp_frame = convert(Array{Float32,2},img)
     temp_frame = convert(Array{Float32,2},lowpass_filter_resize(temp_frame,(256,256)))
 
-    temp_frame = convert(KnetArray,reshape(temp_frame,(256,256,1,1)))
+    temp_frame = convert(atype,reshape(temp_frame,(256,256,1,1)))
 
     my_features = features(hg)
 
