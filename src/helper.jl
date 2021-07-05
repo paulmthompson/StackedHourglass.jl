@@ -131,6 +131,18 @@ function make_heatmap_labels(han,real_w=640,real_h=480,label_img_size=64)
     labels
 end
 
+function make_heatmap_labels_keypoints(points::Array{Tuple,1},input_hw::Tuple,labels=zeros(Float32,64,64,length(points),1))
+
+    for j=1:size(points,1)
+        this_x = points[j][1] / input_hw[1] * size(labels,1)
+        this_y = points[j][2] / input_hw[2] * size(labels,2)
+
+        if (this_x !=0.0)&(this_y != 0.0)
+            labels[:,:,j,1] = gaussian_2d(1.0:1.0:size(labels,1),1.0:1.0:size(labels,2),this_x,this_y)
+        end
+    end
+end
+
 function get_labeled_frames(han,out_hw=256,h=480,w=640,frame_rate=25)
 
     imgs=zeros(Float32,out_hw,out_hw,1,length(han.frame_list))
